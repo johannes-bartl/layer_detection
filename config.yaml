@@ -1,0 +1,17 @@
+images: #dimensions of cropped images
+  W: 512
+  H: 512
+
+training:
+  epochs : 2
+  batch_size : 32
+  learning_rate  : 1e-4
+  d : 8 #number of kernel >> this parameter mainly defines the number of trainable weights: run (print(model.summary))
+  #to see the number of weights #TODO test different network sizes and evaluate the performance on a validation set
+
+path:
+  #defning the path to the data, existing weight files and output file
+  gt : C:\Users\johan\Documents\1-Doktorarbeit\projects\layer_detection\data\training_data\gt
+  img : C:\Users\johan\Documents\1-Doktorarbeit\projects\layer_detection\data\training_data\images
+  output : C:\Users\johan\Documents\1-Doktorarbeit\projects\layer_detection\weights
+  weight : None
