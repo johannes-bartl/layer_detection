@@ -14,7 +14,7 @@ model.load_weights('weights.h5')
 
 
 
-gen = DataGeneratorUNET(images,gt,512,512,32)
+gen = DataGeneratorUNET(images,gt,512,512,16)
 img,gt = gen[0]
 
 prediction = model.predict(img)

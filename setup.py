@@ -14,7 +14,6 @@ setup(name='layer_detection',
             'opencv-python',
             'pyyaml',
             'tensorflow-addons',
-            'scikit-imag',
             'imageio',
             'tifffile',
             'pyyaml'

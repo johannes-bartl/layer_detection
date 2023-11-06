@@ -1,4 +1,4 @@
-import clickpoints
+#import clickpoints
 import numpy as np
 from UNET_model import UNet, normal_focal_loss
 import os
@@ -16,6 +16,9 @@ def load_images(img_path,gt_path):
 
     #search recurively for all pngs in the gt folder
     for p in glob(os.path.join(gt_path,'**\*.png'),recursive=True):
+        print(p)
+        if 'canny' in p:
+            continue
         basepath,filename = os.path.split(p) #extract the filename
         # search for the filename in the image folder
         matching_img_path = glob(os.path.join(img_path,'**',filename),recursive=True)[0]
@@ -31,6 +34,7 @@ def load_images(img_path,gt_path):
             images.append(img)
         else:
             print(f'{filename} not found in the image folder')
+    print(f'Loaded {len(images)}')
     return images,gt
 
 
@@ -50,7 +54,7 @@ class DataGeneratorUNET(tf.keras.utils.Sequence):
         return len(self.images)
 
     # this is called whenever gen[i] is applied. The fit function calls this repeatedly during training
-    def __getitem__(self, index, batch_size=16):
+    def __getitem__(self, index):
 
         images = self.images
         gt = self.gt
@@ -60,8 +64,8 @@ class DataGeneratorUNET(tf.keras.utils.Sequence):
         img_ind = np.random.randint(0,len(images)) #for this batch choose one random image
 
         #find n (n=batch_size) random x and y position inside the image
-        x_random = np.random.randint(0,images_shape[img_ind][0]-W,size=(batch_size))
-        y_random = np.random.randint(0,images_shape[img_ind][1]-H,size=(batch_size))
+        x_random = np.random.randint(0,images_shape[img_ind][0]-W,size=(self.batch_size))
+        y_random = np.random.randint(0,images_shape[img_ind][1]-H,size=(self.batch_size))
 
         #and take the crops
         img_batch = np.array([images[img_ind][x:x+W,y:y+H] for x,y in zip(x_random,y_random)])
@@ -112,7 +116,7 @@ if __name__ == "__main__":
     # gen_val = DataGeneratorUNET(images_val,gt_val,H=H,W=W,batch_size=batch_size,augment=False)
 
     #check if augmentation is correct: Does the image match the gt?
-    plot_grid(img,gt)
+    #plot_grid(img,gt)
 
     #setup UNet, define the img_shape (has to have one extra dimension in the end e.g. (512,512,1))
     #d defined the number of kernels for each convolutional layer: to see the network structure: print(model.summary)
@@ -127,7 +131,9 @@ if __name__ == "__main__":
     model.compile(loss=normal_focal_loss(gamma=2.0),optimizer=Adam(learning_rate=cfg["training"]["learning_rate"]))
 
 
-    model.fit(gen,epochs=cfg["training"]["epochs"],batch_size=cfg["training"]["batch_size"])
+    history = model.fit(gen,epochs=cfg["training"]["epochs"],batch_size=cfg["training"]["batch_size"])
 
     #after training save_weights
-    model.save_weights(os.path.join(cfg["path"]["output"],f'{datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}'))
+    model.save_weights(os.path.join(cfg["path"]["output"],f'{datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}-weights.h5'))
+
+    print(history)
